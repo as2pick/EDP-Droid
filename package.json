@@ -1,0 +1,29 @@
+{
+  "name": "edp-droid",
+  "version": "1.0.0",
+  "description": "The Droid of Ecole Directe Plus website",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon"
+  },
+  "author": "MATRISM :)",
+  "license": "ISC",
+  "dependencies": {
+    "abort-controller": "^3.0.0",
+    "cli-chart": "^0.3.1",
+    "cli-table3": "^0.6.5",
+    "cors": "^2.8.5",
+    "discord.js": "^14.16.3",
+    "dotenv": "^16.4.5",
+    "fs": "^0.0.1-security",
+    "nodemon": "^3.1.0",
+    "path": "^0.12.7",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.3.0",
+    "eslint": "^9.3.0",
+    "globals": "^15.3.0",
+    "prettier": "^3.3.3"
+  }
+}
