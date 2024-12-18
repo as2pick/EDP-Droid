@@ -22,6 +22,21 @@ const sortJSON = async (parsedJSON) => {
     const referringSites = await parsedJSON.referring_sites;
     // const statusCodes = await parsedJSON.status_codes;
 
+    const datas = [
+        general,
+        visitors,
+        requests,
+        notFound,
+        os,
+        browsers,
+        referringSites,
+    ];
+
+    // if (parsedJSON === undefined) {
+    //     console.log("UNDEFINDED");
+    //     return;
+    // }
+
     const handleGeneral = () => {
         return {
             general: {
@@ -128,28 +143,29 @@ const sortJSON = async (parsedJSON) => {
     };
     const handleBrowsers = () => {
         const data = browsers.data;
-        const mostUsedOS = [];
+        const mostUsedBrowser = [];
         const sortMetadata = {};
 
         data.forEach((system) => {
             sortMetadata[system.data] = system.items
                 .slice(0, 3)
                 .map((version) => ({
-                    [version.data]: version.visitors.count,
+                    [version.data]:
+                        version.visitors.count.toLocaleString("fr-FR"),
                 }));
 
-            mostUsedOS.push({
+            mostUsedBrowser.push({
                 name: system.data,
-                visitors: system.visitors.count,
+                visitors: system.visitors.count.toLocaleString("fr-FR"),
             });
         });
 
-        mostUsedOS.sort((a, b) => b.visitors - a.visitors);
-        const topUsedOS = mostUsedOS.slice(0, 3);
+        mostUsedBrowser.sort((a, b) => b.visitors - a.visitors);
+        const topUsedBrowser = mostUsedBrowser.slice(0, 3);
 
         return {
             browsers: sortMetadata,
-            mostUsedOS: topUsedOS,
+            mostUsedOS: topUsedBrowser,
         };
     };
 
@@ -180,13 +196,13 @@ const sortJSON = async (parsedJSON) => {
     };
 
     return {
-        ...handleGeneral(),
-        ...handleVisitors(),
-        ...handleRequests(),
-        ...handleNotFound(),
-        ...handleOS(),
-        ...handleBrowsers(),
-        ...handleReferringSites(),
+        ...(general === undefined ? {} : handleGeneral()),
+        ...(visitors === undefined ? {} : handleVisitors()),
+        ...(requests === undefined ? {} : handleRequests()),
+        ...(notFound === undefined ? {} : handleNotFound()),
+        ...(os === undefined ? {} : handleOS()),
+        ...(browsers === undefined ? {} : handleBrowsers()),
+        ...(referringSites === undefined ? {} : handleReferringSites()),
     };
     // console.dir(handleReferringSites(), { depth: null });
     // console.dir(handleBrowsers(), { depth: null });
@@ -201,18 +217,18 @@ const handleWebSocket = (url = process.env.SOCKET_URL) => {
         const socket = new WebSocket(url);
 
         socket.addEventListener("message", async (event) => {
-            try {
-                const rawData = await event?.data;
-                const data = await JSON.parse(rawData);
+            // try {
+            const rawData = event.data;
+            const data = await JSON.parse(rawData);
 
-                const sortedObject = await sortJSON(data);
+            const sortedObject = await sortJSON(data);
 
-                resolve(sortedObject);
-            } catch (error) {
-                reject(
-                    new Error("Failed to parse message data: " + error.message)
-                );
-            }
+            resolve(sortedObject);
+            // } catch (error) {
+            //     reject(
+            //         new Error("Failed to parse message data: " + error.message)
+            //     );
+            // }
         });
 
         socket.addEventListener("close", (event) => {
@@ -221,7 +237,7 @@ const handleWebSocket = (url = process.env.SOCKET_URL) => {
 
         socket.addEventListener("error", (error) => {
             console.error("[!] WebSocket error: ", error);
-            reject(new Error("WebSocket error: " + error.message));
+            // reject(new Error("WebSocket error: " + error.message));
         });
     });
 };

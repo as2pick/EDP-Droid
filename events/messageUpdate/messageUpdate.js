@@ -17,7 +17,9 @@ const statisticsMessage = async (
         const todayAndYesterday = [];
         for (const [key, value] of Object.entries(obj)) {
             if (todayAndYesterday.length !== 2) {
-                todayAndYesterday.push({ [key]: value });
+                todayAndYesterday.push({
+                    [key]: value.toLocaleString("fr-FR"),
+                });
             } else {
                 return todayAndYesterday;
             }
@@ -57,8 +59,10 @@ const statisticsMessage = async (
 
         return result;
     };
-    const buildMostUsedOSString = (data) => {
-        const mostUsedOSData = data.mostUsedOS;
+    const buildMostUsedBrowserString = (data) => {
+        const mostUsedOSData =
+            data.mostUsedOS === undefined ? null : data.mostUsedOS;
+        if (mostUsedOSData === null) return;
         let result = "\n";
 
         mostUsedOSData.forEach((item) => {
@@ -67,32 +71,6 @@ const statisticsMessage = async (
 
         return result;
     };
-
-    const finalMessage = `
-Démarrage du log : ${response.general.start_logging_date}
-Fin du log : ${response.general.end_logging_date}
-
-**Statistiques générales :**
-    Total des requêtes : ${response.general.total_requests}
-    Requêtes valides : ${response.general.valid_requests}
-    Requêtes invalides : ${response.general.invalid_requests}
-    Requêtes non trouvées : ${response.general.not_found_requests}
-    Temps de génération : ${response.general.generation_time_ms}
-
-**Nombre de visiteurs :**
-    Aujourd'hui : ${Object.values(handleVisitorsDate(response.visitors)[0])}
-    Hier : ${Object.values(handleVisitorsDate(response.visitors)[1])}
-
-**Liens les plus visités :**
-${response.top_visited_routes
-    .map((route) => {
-        return `- ${route}`;
-    })
-    .join("\n")}
-
-${buildMostUsedOSString(response)}
-
-`;
 
     const embed = {
         color: 0x0099ff,
@@ -110,37 +88,59 @@ ${buildMostUsedOSString(response)}
 
             {
                 name: "**Statistiques générales :**",
-                value: `Total des requêtes : ${response.general.total_requests}
-                        Requêtes valides : ${response.general.valid_requests}
-                        Requêtes invalides : ${response.general.invalid_requests}
-                        Requêtes non trouvées : ${response.general.not_found_requests}
-                        Temps de génération : ${response.general.generation_time_ms}`,
+                value: `Total des requêtes : ${response.general.total_requests.toLocaleString("fr-FR")}
+                        Requêtes valides : ${response.general.valid_requests.toLocaleString("fr-FR")}
+                        Requêtes invalides : ${response.general.invalid_requests.toLocaleString("fr-FR")}
+                        Requêtes non trouvées : ${response.general.not_found_requests.toLocaleString("fr-FR")}
+                        Temps de génération : ${response.general.generation_time_ms.toLocaleString("fr-FR")} ms`,
             },
 
             {
                 name: "**Nombre de visiteurs :**",
                 value: `
-                Aujourd'hui : ${Object.values(handleVisitorsDate(response.visitors)[0])}
-                        Hier : ${Object.values(handleVisitorsDate(response.visitors)[1])}`,
+                            Aujourd'hui : ${
+                                response.visitors &&
+                                handleVisitorsDate(response.visitors)[0]
+                                    ? Object.values(
+                                          handleVisitorsDate(
+                                              response.visitors
+                                          )[0]
+                                      )
+                                    : ""
+                            }
+                                    Hier : ${
+                                        response.visitors &&
+                                        handleVisitorsDate(response.visitors)[1]
+                                            ? Object.values(
+                                                  handleVisitorsDate(
+                                                      response.visitors
+                                                  )[1]
+                                              )
+                                            : ""
+                                    }`,
                 inline: false,
             },
 
             {
                 name: "**Liens les plus visités :**",
                 value: `
-                ${response.top_visited_routes
-                    .map((route) => {
-                        return `- ${route}`;
-                    })
-                    .join("\n")}
+                ${
+                    response.top_visited_routes === undefined
+                        ? null
+                        : response.top_visited_routes
+                              .map((route) => {
+                                  return `- ${route}`;
+                              })
+                              .join("\n")
+                }
                 `,
                 inline: false,
             },
 
             {
-                name: "**Systèmes d'exploitation les plus utilisés :**",
+                name: "**Navigateurs les plus utilisés :**",
                 value: `
-                ${buildMostUsedOSString(response)}`,
+                ${buildMostUsedBrowserString(response)}`,
                 inline: false,
             },
         ],
@@ -152,11 +152,15 @@ ${buildMostUsedOSString(response)}
     oldMessage.edit({ embeds: [embed] });
     setDroidStatus(
         client,
-        `Visites aujourd'hui : ${Object.values(handleVisitorsDate(response.visitors)[0])}`,
+        `Visites aujourd'hui : ${
+            response.visitors && handleVisitorsDate(response.visitors)[0]
+                ? Object.values(handleVisitorsDate(response.visitors)[0])
+                : ""
+        }`,
         ActivityType.Custom
     );
 };
 
 module.exports = async (client, oldMessage, newMessage) => {
-    statisticsMessage(client, oldMessage, newMessage, "1302546910007263303");
+    statisticsMessage(client, oldMessage, newMessage, "1318947548563636324");
 };
